@@ -36,3 +36,21 @@ it('should yield a correct sum if an array of numeric string values is provided'
     const expectedResult = numbers.reduce((sum, num) => sum + Number(num), 0);
     expect(result).toBe(expectedResult);
 });
+
+it('Should return 0 for an empty array', () => {
+    // Arrange
+    const numbers = [];
+
+    // Act
+    const result = add(numbers);
+
+    // Assert
+    expect(result).toBe(0);
+});
+
+it('Should throw an error if no argument is provided', () => {
+    // Arrange
+    const resultFn=() => add();
+    // Act & Assert
+    expect(resultFn).toThrow();
+});
