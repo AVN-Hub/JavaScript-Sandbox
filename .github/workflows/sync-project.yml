@@ -1,0 +1,50 @@
+name: Sync Project
+
+# Trigger on any new comment
+on: push
+
+env:
+  TARGET_USER: iam-arjunn
+  TARGET_REPO: Projects
+  TARGET_PATH: JavaScript/Sandbox
+  SECRET_NAME: SYNC_PROJECTS
+  EXCLUDE_FILE: .github/workflows/sync-project.yml
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Clone target repository
+        env:
+          TOKEN: ${{ secrets.SYNC_PROJECTS }}
+        run: |
+          mkdir -p ../target-temp
+          git clone https://x-access-token:${TOKEN}@github.com/${{ env.TARGET_USER }}/${{ env.TARGET_REPO }}.git ../target-temp
+          mkdir -p ../target-temp/${{ env.TARGET_PATH }}
+      - name: Copy files
+        run: |
+          rsync -av --exclude='.git' --exclude='${{ env.EXCLUDE_FILE }}' ./ ../target-temp/${{ env.TARGET_PATH }}/ --delete
+      - name: Commit and push
+        working-directory: ../target-temp
+        run: |
+          git add .
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+          else
+            COMMENT_AUTHOR=${{ github.actor }}
+            REPO_NAME=${{ github.repository }}
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            COMMENT="updated"
+            git commit -m "Sync from ${REPO_NAME}: ${COMMENT}"
+            git push origin main
+          fi
