@@ -54,3 +54,10 @@ it('Should throw an error if no argument is provided', () => {
     // Act & Assert
     expect(resultFn).toThrow();
 });
+
+it('should throw an error if provided with multiple arguments instead of an array', () => {
+    // Arrange
+    const resultFn = () => add(1, 2, 3);
+    // Act & Assert
+    expect(resultFn).toThrow();
+});
